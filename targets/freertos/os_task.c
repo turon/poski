@@ -52,16 +52,22 @@ pos_error_t pos_task_init(struct pos_task * task, const char * name, pos_task_fu
 /* Abort a task and reclaim its TCB/stack. */
 pos_error_t pos_task_remove(struct pos_task * t)
 {
-    TaskHandle_t h;
+    TaskHandle_t h = NULL;
 
-    if (t == NULL || t->handle == NULL)
+    if (t == NULL)
         return POS_INVALID_PARAM;
-    /* Clear t->handle BEFORE vTaskDelete: when a task self-
-     * deletes, vTaskDelete does not return and the post-call
-     * NULL-out would never execute, leaving a stale handle that
-     * a peer caller could re-invoke vTaskDelete on. */
+
+    taskENTER_CRITICAL();
     h = t->handle;
-    t->handle = NULL;
+    if (h != NULL)
+    {
+        t->handle = NULL;
+    }
+    taskEXIT_CRITICAL();
+
+    if (h == NULL)
+        return POS_INVALID_PARAM;
+
     vTaskDelete(h);
     return POS_OK;
 }

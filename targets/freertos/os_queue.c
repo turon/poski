@@ -34,6 +34,8 @@ pos_error_t pos_queue_get(struct pos_queue * queue, void * data, pos_time_t tmo)
 
     if (pos_hw_in_isr())
     {
+        if (tmo != 0)
+            return POS_INVALID_PARAM;
         BaseType_t woken = pdFALSE;
         ret = xQueueReceiveFromISR(queue->handle, data, &woken);
         portYIELD_FROM_ISR(woken);
@@ -61,8 +63,8 @@ pos_error_t pos_queue_put(struct pos_queue * queue, void * data)
     }
     else
     {
-        // Timeout 0 + POS_EBUSY on full -- no blocking forever on
-        // portMAX_DELAY, no configASSERT crash.
+        /* Per os_queue.h contract (@retval POS_EBUSY Returned without waiting,
+         * matching Zephyr's k_msgq_put K_NO_WAIT), return POS_EBUSY when full. */
         ret = xQueueSendToBack(queue->handle, data, 0);
     }
     if (ret != pdPASS)
@@ -83,8 +85,7 @@ pos_error_t pos_queue_deinit(struct pos_queue * queue)
 
 /* Moved here from os_port.h to live next to the other queue ops.
  * Adds the NULL-handle check that xQueueCreate failure silently
- * dropped on the inline version, and initialises the new
- * signal_cb / signal_data fields. */
+ * dropped on the inline version. */
 pos_error_t pos_queue_init(struct pos_queue * q, size_t msg_size, size_t max_msgs)
 {
     if (q == NULL)

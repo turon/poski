@@ -29,6 +29,7 @@
 #include "semphr.h"
 #include "task.h"
 #include "timers.h"
+#include "os_hw.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -93,7 +94,7 @@ static inline pos_error_t pos_timer_stop(struct pos_timer * tm)
 {
     assert(tm);
     assert(tm->handle);
-    return xTimerStop(tm->handle, portMAX_DELAY);
+    return (pos_error_t) xTimerStop(tm->handle, portMAX_DELAY);
 }
 
 static inline bool pos_timer_is_active(struct pos_timer * tm)
@@ -105,7 +106,7 @@ static inline bool pos_timer_is_active(struct pos_timer * tm)
 
 static inline int pos_queue_inited(const struct pos_queue * queue)
 {
-    return (queue->handle != NULL);
+    return (queue != NULL && queue->handle != NULL);
 }
 
 pos_error_t pos_timer_start(struct pos_timer * timer, pos_time_t ticks);
@@ -125,7 +126,7 @@ static inline pos_time_t pos_time_ticks_to_ms(pos_time_t ticks)
  * calls drop the redundant FromISR overhead. */
 static inline pos_time_t pos_time_get(void)
 {
-    return xPortIsInsideInterrupt()
+    return pos_hw_in_isr()
          ? xTaskGetTickCountFromISR()
          : xTaskGetTickCount();
 }

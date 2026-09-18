@@ -32,7 +32,13 @@
  */
 static inline bool pos_hw_in_isr(void)
 {
+#if defined(portVECTACTIVE)
+    return (portVECTACTIVE) != 0;
+#elif defined(xPortIsInsideInterrupt)
     return xPortIsInsideInterrupt() == pdTRUE;
+#else
+    return false;
+#endif
 }
 
 #endif /* _OS_HW_H */

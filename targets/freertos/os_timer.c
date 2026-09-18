@@ -30,7 +30,7 @@ static void pos_timer_cb(TimerHandle_t freertosTimer)
     timer->func(timer->arg);
 }
 
-pos_error_t pos_timer_init(struct pos_timer * timer, pos_timer_fn tm_cb, void * tm_arg)
+pos_error_t pos_timer_init(struct pos_timer * timer, pos_timer_fn * tm_cb, void * tm_arg)
 {
     if (timer == NULL || tm_cb == NULL)
         return POS_INVALID_PARAM;
@@ -100,6 +100,6 @@ pos_time_t pos_timer_remaining_ticks(struct pos_timer * timer, pos_time_t now)
 pos_error_t pos_timer_inited(struct pos_timer * tm)
 {
     if (tm == NULL || tm->handle == NULL)
-        return POS_ENOENT;
+        return POS_EINVAL;
     return POS_OK;
 }
