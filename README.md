@@ -30,6 +30,7 @@ CHIP OSAL provides abstractions for:
 -   [queues](#Queue)
 -   [timers](#Timer)
 -   [time](#Time)
+-   [events, event queues, and event timers](#Event-Queue)
 
 CHIP OSAL currently supports the above abstractions for the following OS
 targets:
@@ -166,6 +167,14 @@ A timer triggers a callback function after a given amount of time has passed.
 
 A collection of utility functions for getting current system time and converting
 between milliseconds and CPU ticks is provided.
+
+### Event Queue
+
+An event (`struct pos_event` / `poski::OsEvent`), event queue (`struct pos_eventq`
+/ `poski::OsEventQueue`), and event timer (`struct pos_event_timer` /
+`poski::OsEventTimer`) in `<poski/osal/os_event.h>` and `<poski/OsEvent.h>`
+provide zero-allocation intrusive event dispatching and delayed timer events
+that execute callbacks safely in consumer task context rather than ISR context.
 
 ## Porting guide
 

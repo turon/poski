@@ -148,12 +148,14 @@ all: $(LIB_NAME) depend                       \
      test_os_mutex.$(TARGET_EXT)  \
      test_os_sem.$(TARGET_EXT)    \
      test_os_timer.$(TARGET_EXT)  \
+     test_os_event.$(TARGET_EXT)  \
      test_os_ring.$(TARGET_EXT)   \
      test_os_task_cpp.$(TARGET_EXT) \
      test_os_queue_cpp.$(TARGET_EXT) \
      test_os_mutex_cpp.$(TARGET_EXT) \
      test_os_semaphore_cpp.$(TARGET_EXT) \
      test_os_timer_cpp.$(TARGET_EXT) \
+     test_os_event_cpp.$(TARGET_EXT) \
      $(NULL)
 
 test_os_task.exe: test_os_task.o $(OBJS)
@@ -169,6 +171,9 @@ test_os_sem.exe: test_os_sem.o $(OBJS)
 	$(LD) -o $@ $^ $(LDFLAGS) $(LIBS)
 
 test_os_timer.exe: test_os_timer.o $(OBJS)
+	$(LD) -o $@ $^ $(LDFLAGS) $(LIBS)
+
+test_os_event.exe: test_os_event.o $(OBJS)
 	$(LD) -o $@ $^ $(LDFLAGS) $(LIBS)
 
 test_os_ring.exe: test_os_ring.o $(OBJS)
@@ -189,18 +194,23 @@ test_os_semaphore_cpp.exe: test_os_semaphore_cpp.o $(OBJS)
 test_os_timer_cpp.exe: test_os_timer_cpp.o $(OBJS)
 	$(LD) -o $@ $^ $(LDFLAGS) $(LIBS)
 
+test_os_event_cpp.exe: test_os_event_cpp.o $(OBJS)
+	$(LD) -o $@ $^ $(LDFLAGS) $(LIBS)
+
 test: all
 	./test_os_task.exe
 	./test_os_queue.exe
 	./test_os_mutex.exe
 	./test_os_sem.exe
 	./test_os_timer.exe
+	./test_os_event.exe
 	./test_os_ring.exe
 	./test_os_task_cpp.exe
 	./test_os_queue_cpp.exe
 	./test_os_mutex_cpp.exe
 	./test_os_semaphore_cpp.exe
 	./test_os_timer_cpp.exe
+	./test_os_event_cpp.exe
 
 ### ===== Google Test (gtest) =====
 
@@ -242,6 +252,9 @@ test_os_sem_wrapper.o: test_gtest_wrapper.cpp
 test_os_timer_wrapper.o: test_gtest_wrapper.cpp
 	$(CPP) -std=c++14 -c $(CFLAGS) $(GTEST_INCLUDES) -DTEST_NAME=Timer -DTEST_MAIN=test_os_timer_main -DWRAP_C_MAIN $< -o $@
 
+test_os_event_wrapper.o: test_gtest_wrapper.cpp
+	$(CPP) -std=c++14 -c $(CFLAGS) $(GTEST_INCLUDES) -DTEST_NAME=Event -DTEST_MAIN=test_os_event_main -DWRAP_C_MAIN $< -o $@
+
 test_os_ring_wrapper.o: test_gtest_wrapper.cpp
 	$(CPP) -std=c++14 -c $(CFLAGS) $(GTEST_INCLUDES) -DTEST_NAME=Ring -DTEST_MAIN=test_ring_main $< -o $@
 
@@ -261,6 +274,9 @@ test_os_sem_gtest.o: test_os_sem.c
 test_os_timer_gtest.o: test_os_timer.c
 	$(CC) -c $(CFLAGS) -Dmain=test_os_timer_main $< -o $@
 
+test_os_event_gtest.o: test_os_event.c
+	$(CC) -c $(CFLAGS) -Dmain=test_os_event_main $< -o $@
+
 test_os_ring_gtest.o: test_os_ring.cpp
 	$(CPP) -std=c++14 -c $(CFLAGS) -Dmain=test_ring_main $< -o $@
 
@@ -278,6 +294,9 @@ test_os_task_cpp_gtest.o: test_os_task_cpp_gtest.cpp
 	$(CPP) -std=c++14 -c $(CFLAGS) $(GTEST_INCLUDES) $< -o $@
 
 test_os_timer_cpp_gtest.o: test_os_timer_cpp_gtest.cpp
+	$(CPP) -std=c++14 -c $(CFLAGS) $(GTEST_INCLUDES) $< -o $@
+
+test_os_event_cpp_gtest.o: test_os_event_cpp_gtest.cpp
 	$(CPP) -std=c++14 -c $(CFLAGS) $(GTEST_INCLUDES) $< -o $@
 
 test_os_ring_cpp_gtest.o: test_os_ring_cpp_gtest.cpp
@@ -299,6 +318,9 @@ test_os_sem_gtest.exe: test_os_sem_gtest.o test_os_sem_wrapper.o $(OBJS) $(GTEST
 test_os_timer_gtest.exe: test_os_timer_gtest.o test_os_timer_wrapper.o $(OBJS) $(GTEST_OBJS)
 	$(LD) -o $@ $^ $(LDFLAGS) $(LIBS)
 
+test_os_event_gtest.exe: test_os_event_gtest.o test_os_event_wrapper.o $(OBJS) $(GTEST_OBJS)
+	$(LD) -o $@ $^ $(LDFLAGS) $(LIBS)
+
 test_os_ring_gtest.exe: test_os_ring_gtest.o test_os_ring_wrapper.o $(OBJS) $(GTEST_OBJS)
 	$(LD) -o $@ $^ $(LDFLAGS) $(LIBS)
 
@@ -318,6 +340,9 @@ test_os_semaphore_cpp_gtest.exe: test_os_semaphore_cpp_gtest.o $(OBJS) $(GTEST_O
 test_os_timer_cpp_gtest.exe: test_os_timer_cpp_gtest.o $(OBJS) $(GTEST_OBJS)
 	$(LD) -o $@ $^ $(LDFLAGS) $(LIBS)
 
+test_os_event_cpp_gtest.exe: test_os_event_cpp_gtest.o $(OBJS) $(GTEST_OBJS)
+	$(LD) -o $@ $^ $(LDFLAGS) $(LIBS)
+
 test_os_ring_cpp_gtest.exe: test_os_ring_cpp_gtest.o $(OBJS) $(GTEST_OBJS)
 	$(LD) -o $@ $^ $(LDFLAGS) $(LIBS)
 
@@ -327,12 +352,14 @@ gtests: $(GTEST_DIR) \
         test_os_mutex_gtest.exe \
         test_os_sem_gtest.exe \
         test_os_timer_gtest.exe \
+        test_os_event_gtest.exe \
         test_os_ring_gtest.exe \
         test_os_task_cpp_gtest.exe \
         test_os_queue_cpp_gtest.exe \
         test_os_mutex_cpp_gtest.exe \
         test_os_semaphore_cpp_gtest.exe \
         test_os_timer_cpp_gtest.exe \
+        test_os_event_cpp_gtest.exe \
         test_os_ring_cpp_gtest.exe
 
 test_gtest: gtests
@@ -341,12 +368,14 @@ test_gtest: gtests
 	./test_os_mutex_gtest.exe
 	./test_os_sem_gtest.exe
 	./test_os_timer_gtest.exe
+	./test_os_event_gtest.exe
 	./test_os_ring_gtest.exe
 	./test_os_task_cpp_gtest.exe
 	./test_os_queue_cpp_gtest.exe
 	./test_os_mutex_cpp_gtest.exe
 	./test_os_semaphore_cpp_gtest.exe
 	./test_os_timer_cpp_gtest.exe
+	./test_os_event_cpp_gtest.exe
 	./test_os_ring_cpp_gtest.exe
 
 show_objs:
