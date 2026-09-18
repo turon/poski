@@ -1,7 +1,5 @@
 /*
- *
- *    Copyright (c) 2020 Project CHIP Authors
- *    Copyright (c) 2018 Google LLC
+ *    Copyright (c) 2026 Project CHIP Authors
  *    All rights reserved.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,25 +15,22 @@
  *    limitations under the License.
  */
 
-#ifndef _OS_HW_H
-#define _OS_HW_H
+#include <gtest/gtest.h>
+#include <poski/OsCriticalSection.h>
 
-#include <stdbool.h>
+TEST(OsCriticalSectionCpp, ScopedNesting) {
+    EXPECT_FALSE(poski::OsCriticalSection::IsActive());
+    EXPECT_FALSE(poski::OsCriticalSection::InIsr());
 
-#include "FreeRTOS.h"
-#include "task.h"
+    {
+        poski::OsCriticalSection outer;
+        EXPECT_TRUE(poski::OsCriticalSection::IsActive());
+        {
+            poski::OsAtomicGuard inner;
+            EXPECT_TRUE(poski::OsCriticalSection::IsActive());
+        }
+        EXPECT_TRUE(poski::OsCriticalSection::IsActive());
+    }
 
-static inline bool pos_hw_in_isr(void)
-{
-#if defined(portVECTACTIVE)
-    return (portVECTACTIVE) != 0;
-#elif defined(xPortIsInsideInterrupt) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7EM__) || defined(__ARM_ARCH_8M_MAIN__)
-    return xPortIsInsideInterrupt() == pdTRUE;
-#elif defined(CHIP_DEVICE_LAYER_TARGET_NRF5)
-    return (SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk) != 0;
-#else
-    return false;
-#endif
+    EXPECT_FALSE(poski::OsCriticalSection::IsActive());
 }
-
-#endif /* _OS_HW_H */

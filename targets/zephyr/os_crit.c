@@ -1,7 +1,5 @@
 /*
- *
- *    Copyright (c) 2020 Project CHIP Authors
- *    Copyright (c) 2018 Google LLC
+ *    Copyright (c) 2026 Project CHIP Authors
  *    All rights reserved.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,25 +15,34 @@
  *    limitations under the License.
  */
 
-#ifndef _OS_HW_H
-#define _OS_HW_H
+#include <zephyr/kernel.h>
 
-#include <stdbool.h>
+#include <poski/osal/osal.h>
 
-#include "FreeRTOS.h"
-#include "task.h"
+static volatile uint32_t s_crit_nesting = 0;
 
-static inline bool pos_hw_in_isr(void)
+pos_crit_state_t pos_crit_enter(void)
 {
-#if defined(portVECTACTIVE)
-    return (portVECTACTIVE) != 0;
-#elif defined(xPortIsInsideInterrupt) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7EM__) || defined(__ARM_ARCH_8M_MAIN__)
-    return xPortIsInsideInterrupt() == pdTRUE;
-#elif defined(CHIP_DEVICE_LAYER_TARGET_NRF5)
-    return (SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk) != 0;
-#else
-    return false;
-#endif
+    unsigned int key = irq_lock();
+    s_crit_nesting++;
+    return (pos_crit_state_t) key;
 }
 
-#endif /* _OS_HW_H */
+void pos_crit_exit(pos_crit_state_t state)
+{
+    if (s_crit_nesting > 0)
+    {
+        s_crit_nesting--;
+    }
+    irq_unlock((unsigned int) state);
+}
+
+bool pos_crit_is_active(void)
+{
+    return s_crit_nesting > 0;
+}
+
+bool pos_crit_in_isr(void)
+{
+    return k_is_in_isr();
+}

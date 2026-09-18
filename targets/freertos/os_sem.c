@@ -18,6 +18,7 @@
  */
 
 #include <assert.h>
+
 #include <poski/osal/osal.h>
 #include "os_hw.h"
 
@@ -29,15 +30,18 @@ pos_error_t pos_sem_init(struct pos_sem * sem, uint16_t tokens)
     }
 
     sem->handle = xSemaphoreCreateCounting(128, tokens);
-    assert(sem->handle);
+    if (sem->handle == NULL)
+    {
+        return POS_ENOMEM;
+    }
 
     return POS_OK;
 }
 
 pos_error_t pos_sem_take(struct pos_sem * sem, pos_time_t timeout)
 {
-    BaseType_t woken;
     BaseType_t ret;
+    BaseType_t woken;
 
     if (!sem)
     {
@@ -82,6 +86,8 @@ pos_error_t pos_sem_give(struct pos_sem * sem)
         ret = xSemaphoreGive(sem->handle);
     }
 
-    assert(ret == pdPASS);
+    /* Per os_sem.h contract, giving a semaphore already at its maximum count
+     * is a benign no-op; do not abort on errQUEUE_FULL. */
+    (void) ret;
     return POS_OK;
 }

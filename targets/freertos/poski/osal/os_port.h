@@ -29,6 +29,7 @@
 #include "semphr.h"
 #include "task.h"
 #include "timers.h"
+#include "os_hw.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -61,6 +62,8 @@ struct pos_sem
 struct pos_queue
 {
     QueueHandle_t handle;
+    pos_signal_fn * signal_cb;
+    void * signal_data;
 };
 
 struct pos_timer
@@ -117,15 +120,9 @@ static inline bool pos_timer_is_active(struct pos_timer * tm)
     return xTimerIsTimerActive(tm->handle) == pdTRUE;
 }
 
-static inline pos_error_t pos_queue_init(struct pos_queue * queue, size_t msg_size, size_t max_msgs)
-{
-    queue->handle = xQueueCreate(max_msgs, msg_size);
-    return POS_OK;
-}
-
 static inline int pos_queue_inited(const struct pos_queue * queue)
 {
-    return (queue->handle != NULL);
+    return (queue != NULL && queue->handle != NULL);
 }
 
 pos_error_t pos_timer_start(struct pos_timer * timer, pos_time_t ticks);
@@ -142,7 +139,7 @@ static inline pos_time_t pos_time_ticks_to_ms(pos_time_t ticks)
 
 static inline pos_time_t pos_time_get(void)
 {
-    return xTaskGetTickCountFromISR();
+    return pos_hw_in_isr() ? xTaskGetTickCountFromISR() : xTaskGetTickCount();
 }
 
 static inline pos_time_t pos_time_get_ms(void)

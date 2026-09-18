@@ -17,6 +17,9 @@
  *    limitations under the License.
  */
 
+#include <assert.h>
+#include <string.h>
+
 #include <poski/osal/osal.h>
 #include "os_hw.h"
 
@@ -25,29 +28,29 @@ static void pos_timer_cb(TimerHandle_t freertosTimer)
     struct pos_timer * timer = pvTimerGetTimerID(freertosTimer);
     assert(timer);
 
-    pos_timer_stop(timer);
-
     timer->func(timer->arg);
 }
 
-pos_error_t pos_timer_init(struct pos_timer * timer, pos_timer_fn * tm_cb, void * tm_arg)
+pos_error_t pos_timer_init(struct pos_timer * timer, pos_timer_fn tm_cb, void * tm_arg)
 {
+    if (timer == NULL || tm_cb == NULL)
+    {
+        return POS_INVALID_PARAM;
+    }
     memset(timer, 0, sizeof(*timer));
     timer->func   = tm_cb;
     timer->arg    = tm_arg;
     timer->handle = xTimerCreate("timer", 1, pdFALSE, timer, pos_timer_cb);
-
+    if (timer->handle == NULL)
+    {
+        return POS_ENOMEM;
+    }
     return POS_OK;
 }
 
 pos_error_t pos_timer_start(struct pos_timer * timer, pos_time_t ticks)
 {
     BaseType_t woken1, woken2, woken3;
-
-    if (ticks < 0)
-    {
-        return POS_INVALID_PARAM;
-    }
 
     if (ticks == 0)
     {
@@ -89,4 +92,13 @@ pos_time_t pos_timer_remaining_ticks(struct pos_timer * timer, pos_time_t now)
     }
 
     return rt;
+}
+
+pos_error_t pos_timer_inited(struct pos_timer * tm)
+{
+    if (tm == NULL || tm->handle == NULL)
+    {
+        return POS_EINVAL;
+    }
+    return POS_OK;
 }
