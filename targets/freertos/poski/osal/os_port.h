@@ -77,6 +77,20 @@ struct pos_task
     void * arg;
 };
 
+struct pos_eventq
+{
+    struct pos_event * head;
+    struct pos_event * tail;
+    SemaphoreHandle_t sem;
+};
+
+struct pos_event_timer
+{
+    struct pos_timer timer;
+    struct pos_eventq * evq;
+    struct pos_event ev;
+};
+
 static inline bool pos_os_started(void)
 {
     return xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED;
@@ -93,7 +107,7 @@ static inline pos_error_t pos_timer_stop(struct pos_timer * tm)
 {
     assert(tm);
     assert(tm->handle);
-    return xTimerStop(tm->handle, portMAX_DELAY);
+    return (pos_error_t) xTimerStop(tm->handle, portMAX_DELAY);
 }
 
 static inline bool pos_timer_is_active(struct pos_timer * tm)
