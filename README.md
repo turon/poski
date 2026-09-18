@@ -30,6 +30,7 @@ CHIP OSAL provides abstractions for:
 -   [queues](#Queue)
 -   [timers](#Timer)
 -   [time](#Time)
+-   [critical sections](#Critical-Section)
 
 CHIP OSAL currently supports the above abstractions for the following OS
 targets:
@@ -166,6 +167,15 @@ A timer triggers a callback function after a given amount of time has passed.
 
 A collection of utility functions for getting current system time and converting
 between milliseconds and CPU ticks is provided.
+
+### Critical Section
+
+A critical section (`<poski/osal/os_crit.h>` and C++ RAII guard
+`<poski/OsCriticalSection.h>`) provides nestable, short-duration protection for
+atomic code sequences by masking interrupts (`pos_crit_enter` / `pos_crit_exit`,
+with `pos_atomic_enter` / `pos_atomic_exit` aliases), as well as querying
+whether execution is inside a critical section (`pos_crit_is_active`) or an
+Interrupt Service Routine (`pos_crit_in_isr`).
 
 ## Porting guide
 
